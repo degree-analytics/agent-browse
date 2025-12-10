@@ -73,7 +73,11 @@ Install Chrome for your platform:
 
 To refresh cookies from your main Chrome profile:
 ```bash
-rm -rf .chrome-profile
+# Clean all port-specific profiles
+rm -rf .chrome-profile-*
+
+# Or clean a specific port's profile
+rm -rf .chrome-profile-9222
 ```
 
 ## Resources

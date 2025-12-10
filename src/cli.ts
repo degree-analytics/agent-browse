@@ -93,7 +93,7 @@ async function initBrowser() {
     throw new Error('Could not find Chrome installation');
   }
 
-  const tempUserDataDir = join(PLUGIN_ROOT, '.chrome-profile');
+  const tempUserDataDir = join(PLUGIN_ROOT, `.chrome-profile-${cdpPort}`);
 
   // Check if Chrome is already running on the CDP port
   let chromeReady = false;
@@ -112,6 +112,7 @@ async function initBrowser() {
     chromeProcess = spawn(chromePath, [
       `--remote-debugging-port=${cdpPort}`,
       `--user-data-dir=${tempUserDataDir}`,
+      '--disable-session-crashed-bubble', // Suppress "restore session" prompt
       '--window-position=-9999,-9999', // Launch minimized off-screen
       '--window-size=1250,900',
     ], {
@@ -121,7 +122,7 @@ async function initBrowser() {
 
     // Store PID for safe cleanup later
     if (chromeProcess.pid) {
-      const pidFilePath = join(PLUGIN_ROOT, '.chrome-pid');
+      const pidFilePath = join(PLUGIN_ROOT, `.chrome-pid-${cdpPort}`);
       writeFileSync(pidFilePath, JSON.stringify({
         pid: chromeProcess.pid,
         startTime: Date.now()
@@ -191,7 +192,7 @@ async function initBrowser() {
 }
 
 async function closeBrowser() {
-  const pidFilePath = join(PLUGIN_ROOT, '.chrome-pid');
+  const pidFilePath = join(PLUGIN_ROOT, `.chrome-pid-${cdpPort}`);
 
   // First, try to close via Stagehand if we have an instance in this process
   if (stagehandInstance) {
@@ -442,11 +443,12 @@ async function screenshot() {
 
 // Main CLI handler
 async function main() {
-  // Prepare Chrome profile on first run
-  prepareChromeProfile(PLUGIN_ROOT);
-
   const { port: cliPort, args } = parseArgs(process.argv.slice(2));
   cdpPort = resolvePort(cliPort);
+
+  // Prepare Chrome profile on first run (must be after port resolution)
+  prepareChromeProfile(PLUGIN_ROOT, cdpPort);
+
   const command = args[0];
 
   try {
