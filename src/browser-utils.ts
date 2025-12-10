@@ -73,13 +73,14 @@ export function getChromeUserDataDir(): string | undefined {
 }
 
 /**
- * Prepares the Chrome profile by copying it to .chrome-profile directory (first run only)
+ * Prepares the Chrome profile by copying it to .chrome-profile-{port} directory (first run only)
  * This should be called before initializing Stagehand to avoid timeouts
  * @param pluginRoot The root directory of the plugin
+ * @param port The CDP port number (default: 9222)
  */
-export function prepareChromeProfile(pluginRoot: string) {
+export function prepareChromeProfile(pluginRoot: string, port: number = 9222) {
   const sourceUserDataDir = getChromeUserDataDir();
-  const tempUserDataDir = join(pluginRoot, '.chrome-profile');
+  const tempUserDataDir = join(pluginRoot, `.chrome-profile-${port}`);
 
   // Only copy if the temp directory doesn't exist yet
   if (!existsSync(tempUserDataDir)) {
@@ -87,7 +88,7 @@ export function prepareChromeProfile(pluginRoot: string) {
     const reset = '\x1b[0m';
 
     // Show copying message
-    console.log(`${dim}Copying Chrome profile to .chrome-profile/ (this may take a minute)...${reset}`);
+    console.log(`${dim}Copying Chrome profile to .chrome-profile-${port}/ (this may take a minute)...${reset}`);
 
     mkdirSync(tempUserDataDir, { recursive: true });
 
