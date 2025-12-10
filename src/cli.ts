@@ -39,6 +39,49 @@ let stagehandInstance: Stagehand | null = null;
 let currentPage: any = null;
 let chromeProcess: ChildProcess | null = null;
 let weStartedChrome = false; // Track if we launched Chrome vs. reused existing
+let cdpPort = 9222; // Will be set by main() based on CLI/env config
+
+// Port configuration helpers
+function parseArgs(argv: string[]): { port?: number; args: string[] } {
+  const args: string[] = [];
+  let port: number | undefined;
+
+  for (let i = 0; i < argv.length; i++) {
+    if (argv[i] === '--port') {
+      if (!argv[i + 1]) {
+        throw new Error('--port flag requires a value');
+      }
+      const parsed = parseInt(argv[i + 1], 10);
+      if (isNaN(parsed) || parsed <= 0 || parsed >= 65536) {
+        throw new Error(`Invalid port: ${argv[i + 1]}. Port must be a number between 1 and 65535.`);
+      }
+      port = parsed;
+      i++; // skip the port value
+    } else {
+      args.push(argv[i]);
+    }
+  }
+  return { port, args };
+}
+
+function resolvePort(cliPort?: number): number {
+  // Priority: CLI flag > environment variable > default
+  if (cliPort !== undefined) {
+    return cliPort;
+  }
+
+  const envPort = process.env.BROWSER_CDP_PORT;
+  if (envPort) {
+    const parsed = parseInt(envPort, 10);
+    if (isNaN(parsed) || parsed <= 0 || parsed >= 65536) {
+      console.error(`Warning: Invalid BROWSER_CDP_PORT="${envPort}". Using default port 9222.`);
+      return 9222;
+    }
+    return parsed;
+  }
+
+  return 9222; // Default CDP port
+}
 
 async function initBrowser() {
   if (stagehandInstance) {
@@ -50,7 +93,6 @@ async function initBrowser() {
     throw new Error('Could not find Chrome installation');
   }
 
-  const cdpPort = 9222;
   const tempUserDataDir = join(PLUGIN_ROOT, '.chrome-profile');
 
   // Check if Chrome is already running on the CDP port
@@ -149,7 +191,6 @@ async function initBrowser() {
 }
 
 async function closeBrowser() {
-  const cdpPort = 9222;
   const pidFilePath = join(PLUGIN_ROOT, '.chrome-pid');
 
   // First, try to close via Stagehand if we have an instance in this process
@@ -404,7 +445,8 @@ async function main() {
   // Prepare Chrome profile on first run
   prepareChromeProfile(PLUGIN_ROOT);
 
-  const args = process.argv.slice(2);
+  const { port: cliPort, args } = parseArgs(process.argv.slice(2));
+  cdpPort = resolvePort(cliPort);
   const command = args[0];
 
   try {
@@ -451,7 +493,7 @@ async function main() {
         break;
 
       default:
-        throw new Error(`Unknown command: ${command}\nAvailable commands: navigate, act, extract, observe, screenshot, close`);
+        throw new Error(`Unknown command: ${command}\nAvailable commands: navigate, act, extract, observe, screenshot, close\nOptions: --port <number> (default: 9222, or set BROWSER_CDP_PORT env var)`);
     }
 
     console.log(JSON.stringify(result, null, 2));
