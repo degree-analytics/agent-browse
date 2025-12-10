@@ -112,6 +112,7 @@ async function initBrowser() {
     chromeProcess = spawn(chromePath, [
       `--remote-debugging-port=${cdpPort}`,
       `--user-data-dir=${tempUserDataDir}`,
+      '--disable-session-crashed-bubble', // Suppress "restore session" prompt
       '--window-position=-9999,-9999', // Launch minimized off-screen
       '--window-size=1250,900',
     ], {
