@@ -121,7 +121,7 @@ async function initBrowser() {
 
     // Store PID for safe cleanup later
     if (chromeProcess.pid) {
-      const pidFilePath = join(PLUGIN_ROOT, '.chrome-pid');
+      const pidFilePath = join(PLUGIN_ROOT, `.chrome-pid-${cdpPort}`);
       writeFileSync(pidFilePath, JSON.stringify({
         pid: chromeProcess.pid,
         startTime: Date.now()
