@@ -191,7 +191,7 @@ async function initBrowser() {
 }
 
 async function closeBrowser() {
-  const pidFilePath = join(PLUGIN_ROOT, '.chrome-pid');
+  const pidFilePath = join(PLUGIN_ROOT, `.chrome-pid-${cdpPort}`);
 
   // First, try to close via Stagehand if we have an instance in this process
   if (stagehandInstance) {
