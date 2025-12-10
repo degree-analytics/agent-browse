@@ -442,11 +442,12 @@ async function screenshot() {
 
 // Main CLI handler
 async function main() {
-  // Prepare Chrome profile on first run
-  prepareChromeProfile(PLUGIN_ROOT);
-
   const { port: cliPort, args } = parseArgs(process.argv.slice(2));
   cdpPort = resolvePort(cliPort);
+
+  // Prepare Chrome profile on first run (must be after port resolution)
+  prepareChromeProfile(PLUGIN_ROOT, cdpPort);
+
   const command = args[0];
 
   try {
