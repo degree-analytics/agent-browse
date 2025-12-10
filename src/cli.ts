@@ -93,7 +93,7 @@ async function initBrowser() {
     throw new Error('Could not find Chrome installation');
   }
 
-  const tempUserDataDir = join(PLUGIN_ROOT, '.chrome-profile');
+  const tempUserDataDir = join(PLUGIN_ROOT, `.chrome-profile-${cdpPort}`);
 
   // Check if Chrome is already running on the CDP port
   let chromeReady = false;
