@@ -29,8 +29,11 @@ npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 
-# Chrome automation profile
-.chrome-profile/
+# Chrome automation profiles (port-specific)
+.chrome-profile-*/
+
+# Chrome PID files (port-specific)
+.chrome-pid-*
 
 # Browser screenshots and custom scripts (ignore contents but keep directory structure)
 agent/browser_screenshots/*
